@@ -1,498 +1,427 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, collection, doc, setDoc, getDoc, 
-  onSnapshot, updateDoc, deleteDoc, addDoc, query 
-} from 'firebase/firestore';
-import { 
-  getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
-} from 'firebase/auth';
-import { 
-  ShoppingBag, Instagram, MessageCircle, Clock, MapPin, 
-  Plus, Edit2, Trash2, X, Check, Star, Settings, Eye, ShoppingCart, LogIn
-} from 'lucide-react';
-
-// --- CONFIGURATION ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'yur-collection-001';
-
-// --- STYLES & ANIMATIONS (TAILWIND) ---
-// Note: Framer motion would be ideal, but we'll use standard CSS transitions for maximum stability in one file.
-
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('home');
-  const [selectedCategory, setSelectedCategory] = useState('Semua');
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(['Polos', 'Motif', 'Pashmina', 'Cardenza', 'Paris', 'Anak', 'Fashion']);
-  const [settings, setSettings] = useState({
-    storeName: 'Yur Collection',
-    whatsapp: '6281234567890',
-    address: 'Jl. Fashion No. 123, Jakarta',
-    hours: '09:00 - 21:00',
-    logo: '✨'
-  });
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [showProductDetail, setShowProductDetail] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-
-  // --- AUTHENTICATION ---
-  useEffect(() => {
-    const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  // --- DATA SYNC ---
-  useEffect(() => {
-    if (!user) return;
-
-    // Sync Products
-    const qProducts = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-    const unsubProducts = onSnapshot(qProducts, (snapshot) => {
-      const p = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (p.length === 0 && !isAdmin) {
-        // Initial Mock Data if empty
-        const initial = [
-          { name: 'Pashmina Silk', category: 'Pashmina', price: 85000, discountPrice: 45000, sold: 124, rating: 5, image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=300&q=80' },
-          { name: 'Square Paris Premium', category: 'Paris', price: 50000, discountPrice: 25000, sold: 342, rating: 5, image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=300&q=80' },
-        ];
-        initial.forEach(item => addDoc(qProducts, item));
-      }
-      setProducts(p);
-    }, (err) => console.error("Products error:", err));
-
-    // Sync Settings
-    const docSettings = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-    const unsubSettings = onSnapshot(docSettings, (doc) => {
-      if (doc.exists()) setSettings(doc.data());
-      else setDoc(docSettings, settings);
-    });
-
-    // Sync Categories
-    const docCats = doc(db, 'artifacts', appId, 'public', 'data', 'categories', 'main');
-    const unsubCats = onSnapshot(docCats, (doc) => {
-      if (doc.exists()) setCategories(doc.data().list);
-      else setDoc(docCats, { list: categories });
-    });
-
-    return () => {
-      unsubProducts();
-      unsubSettings();
-      unsubCats();
-    };
-  }, [user]);
-
-  // --- LIVE NOTIFICATIONS (POP UPS) ---
-  useEffect(() => {
-    const names = ['Siska', 'Putri', 'Dewi', 'Indah', 'Rina', 'Aulia', 'Budi', 'Sarah'];
-    const actions = ['sedang melihat', 'baru saja membeli', 'menambahkan ke keranjang'];
-    
-    const interval = setInterval(() => {
-      const newNotif = {
-        id: Date.now(),
-        text: `${names[Math.floor(Math.random() * names.length)]} ${actions[Math.floor(Math.random() * actions.length)]} produk ini`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setNotifications(prev => [newNotif, ...prev].slice(0, 1));
-      setTimeout(() => setNotifications([]), 4000);
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // --- ACTIONS ---
-  const saveProduct = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      name: formData.get('name'),
-      category: formData.get('category'),
-      price: Number(formData.get('price')),
-      discountPrice: Number(formData.get('discountPrice')),
-      sold: Number(formData.get('sold')),
-      rating: 5,
-      image: formData.get('image') || 'https://via.placeholder.com/300'
-    };
-
-    if (editingProduct?.id) {
-      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), data);
-    } else {
-      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), data);
-    }
-    setEditingProduct(null);
-  };
-
-  const deleteProduct = async (id) => {
-    if (confirm('Hapus produk ini?')) {
-      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
-    }
-  };
-
-  const updateStoreSettings = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newSettings = {
-      storeName: formData.get('storeName'),
-      whatsapp: formData.get('whatsapp'),
-      address: formData.get('address'),
-      hours: formData.get('hours'),
-      logo: formData.get('logo')
-    };
-    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), newSettings);
-    setSettings(newSettings);
-    alert('Pengaturan disimpan!');
-  };
-
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'Semua') return products;
-    return products.filter(p => p.category === selectedCategory);
-  }, [products, selectedCategory]);
-
-  const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
-
-  // --- UI COMPONENTS ---
-  const AdminPanel = () => (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-lg p-6 relative">
-        <button onClick={() => setShowAdminModal(false)} className="absolute top-4 right-4"><X /></button>
-        <h2 className="text-2xl font-bold mb-6 text-pink-600 flex items-center gap-2">
-          <Settings className="animate-spin-slow" /> Panel Admin
-        </h2>
-
-        <div className="space-y-8">
-          {/* Store Config */}
-          <form onSubmit={updateStoreSettings} className="space-y-4 border-b pb-6">
-            <h3 className="font-semibold text-gray-700">Pengaturan Toko</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <input name="storeName" defaultValue={settings.storeName} placeholder="Nama Toko" className="border p-2 rounded" />
-              <input name="logo" defaultValue={settings.logo} placeholder="Emoji Logo" className="border p-2 rounded" />
-            </div>
-            <input name="whatsapp" defaultValue={settings.whatsapp} placeholder="No WA (62...)" className="border p-2 rounded w-full" />
-            <input name="address" defaultValue={settings.address} placeholder="Alamat" className="border p-2 rounded w-full" />
-            <input name="hours" defaultValue={settings.hours} placeholder="Jam Operasional" className="border p-2 rounded w-full" />
-            <button className="bg-pink-500 text-white w-full py-2 rounded-lg font-bold">Simpan Pengaturan Toko</button>
-          </form>
-
-          {/* Product Manager */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-700 flex justify-between items-center">
-              Manajemen Produk
-              <button onClick={() => setEditingProduct({})} className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">+ Tambah Baru</button>
-            </h3>
-            
-            {(editingProduct) && (
-              <form onSubmit={saveProduct} className="bg-gray-50 p-4 rounded-xl space-y-3 animate-in fade-in slide-in-from-top-4">
-                <input name="name" defaultValue={editingProduct.name} placeholder="Nama Produk" className="border p-2 rounded w-full" required />
-                <select name="category" defaultValue={editingProduct.category} className="border p-2 rounded w-full">
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <div className="grid grid-cols-2 gap-2">
-                  <input name="price" type="number" defaultValue={editingProduct.price} placeholder="Harga Asli" className="border p-2 rounded" required />
-                  <input name="discountPrice" type="number" defaultValue={editingProduct.discountPrice} placeholder="Harga Diskon" className="border p-2 rounded" required />
-                </div>
-                <input name="sold" type="number" defaultValue={editingProduct.sold} placeholder="Jumlah Terjual" className="border p-2 rounded w-full" />
-                <input name="image" defaultValue={editingProduct.image} placeholder="URL Foto Produk" className="border p-2 rounded w-full" />
-                <div className="flex gap-2">
-                  <button type="submit" className="bg-blue-600 text-white flex-1 py-2 rounded-lg">Simpan Produk</button>
-                  <button type="button" onClick={() => setEditingProduct(null)} className="bg-gray-300 px-4 rounded-lg">Batal</button>
-                </div>
-              </form>
-            )}
-
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {products.map(p => (
-                <div key={p.id} className="flex items-center justify-between p-2 bg-white border rounded-lg">
-                  <span className="text-sm font-medium truncate flex-1">{p.name}</span>
-                  <div className="flex gap-2">
-                    <button onClick={() => setEditingProduct(p)} className="p-1 text-blue-500"><Edit2 size={16} /></button>
-                    <button onClick={() => deleteProduct(p.id)} className="p-1 text-red-500"><Trash2 size={16} /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-pink-50 text-gray-800 font-sans selection:bg-pink-200">
-      
-      {/* Header & Logo */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-pink-100 shadow-sm px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl animate-bounce">{settings.logo}</span>
-            <h1 className="text-xl font-extrabold tracking-tight text-pink-600 uppercase italic">
-              {settings.storeName}
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-             <button 
-              onClick={() => setShowAdminModal(true)} 
-              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-pink-100 transition-colors"
-              title="Admin Panel (Tombol Rahasia)"
-            >
-              <Settings size={18} className="text-gray-500" />
-            </button>
-            <div className="relative">
-              <ShoppingBag className="text-pink-500" />
-              <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">3</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto pb-24">
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yur Collection - Toko Online Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
         
-        {/* Banner */}
-        <div className="p-4">
-          <div className="bg-gradient-to-r from-pink-400 to-rose-400 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden group">
-            <div className="relative z-10">
-              <h2 className="text-2xl font-bold mb-1">Koleksi Terbaru ✨</h2>
-              <p className="text-pink-100 text-sm mb-4">Dapatkan diskon hingga 50% hari ini!</p>
-              <button className="bg-white text-pink-500 px-4 py-2 rounded-full text-xs font-bold shadow-md hover:scale-105 transition-transform">
-                Lihat Promo
-              </button>
-            </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
-          </div>
-        </div>
-
-        {/* Categories Carousel */}
-        <div className="px-4 mb-6">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar py-2">
-            <button 
-              onClick={() => setSelectedCategory('Semua')}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedCategory === 'Semua' ? 'bg-pink-600 text-white shadow-md scale-105' : 'bg-white text-gray-500 border border-pink-100'}`}
-            >
-              Semua
-            </button>
-            {categories.map(cat => (
-              <button 
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedCategory === cat ? 'bg-pink-600 text-white shadow-md scale-105' : 'bg-white text-gray-500 border border-pink-100'}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="px-4 grid grid-cols-2 gap-4">
-          {filteredProducts.map((product, idx) => (
-            <div 
-              key={product.id} 
-              className="bg-white rounded-2xl overflow-hidden shadow-sm border border-pink-50 group hover:shadow-xl transition-all duration-300 animate-in fade-in zoom-in slide-in-from-bottom-4"
-              style={{ animationDelay: `${idx * 50}ms` }}
-              onClick={() => setShowProductDetail(product)}
-            >
-              <div className="relative aspect-square overflow-hidden bg-gray-100">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute top-2 left-2 bg-rose-500 text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-sm">
-                  PROMO
-                </div>
-              </div>
-              <div className="p-3">
-                <h3 className="text-sm font-bold text-gray-700 truncate mb-1">{product.name}</h3>
-                <div className="flex items-center gap-1 mb-2">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
-                  </div>
-                  <span className="text-[10px] text-gray-400">({product.sold} terjual)</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 line-through">{formatIDR(product.price)}</span>
-                  <span className="text-sm font-extrabold text-pink-600">{formatIDR(product.discountPrice)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Info Section */}
-        <div className="mt-10 px-4 space-y-4">
-          <div className="bg-white p-5 rounded-3xl border border-pink-100 shadow-sm">
-            <h3 className="font-bold mb-4 flex items-center gap-2 text-pink-600">
-              <MapPin size={18} /> Informasi Toko
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex gap-3">
-                <Clock className="text-pink-400 shrink-0" size={16} />
-                <div>
-                  <p className="font-bold">Jam Operasional</p>
-                  <p className="text-gray-500">{settings.hours}</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <MapPin className="text-pink-400 shrink-0" size={16} />
-                <div>
-                  <p className="font-bold">Alamat</p>
-                  <p className="text-gray-500">{settings.address}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-pink-100 shadow-sm">
-             <h3 className="font-bold mb-4 flex items-center gap-2 text-pink-600">
-              ⭐ Ulasan Pelanggan
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-pink-50/50 p-3 rounded-xl border border-pink-100 italic text-sm">
-                "Kualitas hijabnya bagus banget, warnanya sesuai foto dan pengiriman cepat! Bakal langganan disini ✨"
-                <div className="mt-2 font-bold text-pink-600">— Mega S.</div>
-              </div>
-              <div className="bg-pink-50/50 p-3 rounded-xl border border-pink-100 italic text-sm">
-                "Bahannya adem dan nggak gampang kusut. Koleksi anak-anaknya juga lucu banget!"
-                <div className="mt-2 font-bold text-pink-600">— Bunda Fika</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Floating Notifications */}
-      {notifications.map(n => (
-        <div key={n.id} className="fixed bottom-24 left-4 right-4 z-50 animate-in slide-in-from-bottom-full duration-500">
-          <div className="bg-white/90 backdrop-blur shadow-xl border border-pink-100 px-4 py-2 rounded-full flex items-center gap-3 w-fit mx-auto">
-            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white">
-              <Eye size={14} />
-            </div>
-            <div className="text-xs">
-              <span className="font-bold">{n.text}</span>
-              <span className="text-[10px] text-gray-400 block">{n.time}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Product Detail Modal */}
-      {showProductDetail && (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-end justify-center animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] overflow-hidden animate-in slide-in-from-bottom-full duration-500 max-h-[90vh] overflow-y-auto">
-            <div className="relative">
-              <button 
-                onClick={() => setShowProductDetail(null)}
-                className="absolute top-6 right-6 bg-white/50 backdrop-blur p-2 rounded-full z-10 hover:bg-white"
-              >
-                <X size={20} />
-              </button>
-              <img src={showProductDetail.image} className="w-full aspect-square object-cover" />
-            </div>
-            <div className="p-8 pb-32">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <span className="text-xs font-bold text-pink-500 bg-pink-50 px-3 py-1 rounded-full">{showProductDetail.category}</span>
-                  <h2 className="text-2xl font-bold mt-2">{showProductDetail.name}</h2>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400 line-through">{formatIDR(showProductDetail.price)}</p>
-                  <p className="text-2xl font-black text-pink-600">{formatIDR(showProductDetail.discountPrice)}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 mb-6 py-4 border-y border-gray-100">
-                <div className="flex items-center gap-1">
-                  <Star fill="#f59e0b" className="text-amber-500" size={18} />
-                  <span className="font-bold">5.0</span>
-                </div>
-                <div className="text-gray-300">|</div>
-                <div className="text-gray-500 text-sm">Terjual {showProductDetail.sold}+</div>
-                <div className="text-gray-300">|</div>
-                <div className="flex items-center gap-1 text-green-600 text-sm font-bold">
-                  <Check size={16} /> Stok Tersedia
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-bold">Deskripsi Produk</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Koleksi spesial dari Yur Collection. Didesain dengan material premium yang nyaman dipakai seharian. 
-                  Sangat cocok untuk acara formal maupun daily fashion anda.
-                </p>
-              </div>
-            </div>
-            
-            <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur-lg border-t flex gap-3">
-              <button className="w-14 h-14 border-2 border-pink-100 rounded-2xl flex items-center justify-center text-pink-500 hover:bg-pink-50 transition-colors">
-                <ShoppingCart />
-              </button>
-              <a 
-                href={`https://wa.me/${settings.whatsapp}?text=Halo%20Yur%20Collection,%20saya%20tertarik%20dengan%20produk%20${encodeURIComponent(showProductDetail.name)}`}
-                target="_blank"
-                className="flex-1 h-14 bg-green-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-green-200 hover:bg-green-600 active:scale-95 transition-all"
-              >
-                <MessageCircle fill="currentColor" />
-                Pesan via WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Modal Triggered by Secret Button */}
-      {showAdminModal && <AdminPanel />}
-
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-pink-100 px-6 py-3 z-40 max-w-md mx-auto">
-        <div className="flex justify-between items-center">
-          <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-pink-600' : 'text-gray-400'}`}>
-            <ShoppingBag size={20} />
-            <span className="text-[10px] font-bold">Toko</span>
-          </button>
-          <button onClick={() => setActiveTab('promo')} className={`flex flex-col items-center gap-1 ${activeTab === 'promo' ? 'text-pink-600' : 'text-gray-400'}`}>
-            <Star size={20} />
-            <span className="text-[10px] font-bold">Promo</span>
-          </button>
-          <div className="relative -top-8">
-            <a 
-              href={`https:`              className="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-pink-200 border-4 border-white animate-pulse"
-            >
-              <MessageCircle size={30} fill="currentColor" />
-            </a>
-          </div>
-          <button onClick={() => setActiveTab('social')} className={`flex flex-col items-center gap-1 ${activeTab === 'social' ? 'text-pink-600' : 'text-gray-400'}`}>
-            <Instagram size={20} />
-            <span className="text-[10px] font-bold">Feed</span>
-          </button>
-          <button onClick={() => setActiveTab('info')} className={`flex flex-col items-center gap-1 ${activeTab === 'info' ? 'text-pink-600' : 'text-gray-400'}`}>
-            <Clock size={20} />
-            <span className="text-[10px] font-bold">Buka</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Custom Global CSS for hidden scrollbars */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        :root {
+            --primary: #d4a373;
+            --secondary: #faedcd;
+            --accent: #ccd5ae;
+            --dark: #1d2124;
         }
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcfaf7;
+            color: var(--dark);
+            overflow-x: hidden;
         }
-      `}} />
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .custom-shadow {
+            box-shadow: 0 10px 30px rgba(212, 163, 115, 0.15);
+        }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { display: none; }
+
+        .notification-popup {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .notification-popup.active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Notification Popup -->
+    <div id="notif" class="notification-popup">
+        <div class="glass-morphism p-3 rounded-2xl flex items-center gap-3 custom-shadow border-l-4 border-yellow-600">
+            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500" id="notif-user">Seseorang dari Jakarta</p>
+                <p class="text-sm font-semibold" id="notif-action">Sedang membeli Pashmina Cradenza</p>
+            </div>
+        </div>
     </div>
-  );
-};
 
-export default App;
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-morphism py-4 px-6 flex justify-between items-center custom-shadow">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-[#d4a373] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg rotate-3">Y</div>
+            <h1 id="shop-name" class="text-xl font-bold tracking-tight text-gray-800" contenteditable="true">Yur Collection</h1>
+        </div>
+        <button onclick="toggleAdmin()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-yellow-100 hover:text-yellow-600 transition-all">
+            <i class="fas fa-cog"></i>
+        </button>
+    </header>
+
+    <!-- Admin Panel (Hidden by default) -->
+    <div id="admin-panel" class="hidden p-6 bg-white border-b border-gray-100 mb-4 animate-in fade-in duration-500">
+        <h2 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-tools"></i> Pengaturan Toko</h2>
+        <div class="grid grid-cols-1 gap-4 mb-6">
+            <input type="text" id="edit-wa" placeholder="No WhatsApp (628...)" class="p-3 border rounded-xl w-full text-sm">
+            <input type="text" id="edit-address" placeholder="Alamat Toko" class="p-3 border rounded-xl w-full text-sm">
+            <input type="text" id="edit-hours" placeholder="Jam Operasional" class="p-3 border rounded-xl w-full text-sm">
+        </div>
+        <button onclick="saveSettings()" class="bg-gray-800 text-white px-6 py-2 rounded-xl text-sm font-semibold w-full">Simpan Pengaturan</button>
+        <hr class="my-6">
+        <h2 class="font-bold text-lg mb-4">Tambah Produk Baru</h2>
+        <div class="flex flex-col gap-3">
+            <input type="text" id="p-name" placeholder="Nama Produk" class="p-3 border rounded-xl text-sm">
+            <select id="p-cat" class="p-3 border rounded-xl text-sm">
+                <option value="Polos">Polos</option>
+                <option value="Motif">Motif</option>
+                <option value="Pashmina">Pashmina</option>
+                <option value="Cradenza">Cradenza</option>
+                <option value="Paris">Paris</option>
+                <option value="Anak">Anak</option>
+                <option value="Fashion">Fashion</option>
+            </select>
+            <div class="flex gap-2">
+                <input type="number" id="p-price" placeholder="Harga Asli" class="p-3 border rounded-xl w-1/2 text-sm">
+                <input type="number" id="p-discount" placeholder="Harga Diskon" class="p-3 border rounded-xl w-1/2 text-sm">
+            </div>
+            <input type="text" id="p-img" placeholder="Link Foto Produk" class="p-3 border rounded-xl text-sm">
+            <button onclick="addProduct()" class="bg-[#d4a373] text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-[#c39262] transition-all">Tambah ke Katalog</button>
+        </div>
+    </div>
+
+    <!-- Hero Banner -->
+    <section class="px-6 mt-6">
+        <div class="relative h-44 rounded-3xl overflow-hidden shadow-xl animate-float">
+            <img src="https://images.unsplash.com/photo-1520006403909-838d6b92c22e?q=80&w=1000" class="w-full h-full object-cover brightness-75">
+            <div class="absolute inset-0 flex flex-col justify-center px-6 text-white">
+                <span class="text-xs font-bold uppercase tracking-widest mb-1 text-yellow-200">Koleksi Terbaru 2024</span>
+                <h2 class="text-2xl font-bold leading-tight">Gaya Elegan<br>Setiap Hari</h2>
+                <div class="mt-3 flex gap-2">
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-semibold">Diskon s/d 50%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Tab -->
+    <section class="mt-8">
+        <div class="flex overflow-x-auto px-6 gap-3 pb-4" id="category-tabs">
+            <button onclick="filterCategory('All')" class="category-btn active px-5 py-2 rounded-full bg-[#d4a373] text-white whitespace-nowrap text-sm font-semibold shadow-md">Semua</button>
+            <button onclick="filterCategory('Polos')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Polos</button>
+            <button onclick="filterCategory('Motif')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Motif</button>
+            <button onclick="filterCategory('Pashmina')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Pashmina</button>
+            <button onclick="filterCategory('Cradenza')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Cradenza</button>
+            <button onclick="filterCategory('Paris')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Paris</button>
+            <button onclick="filterCategory('Anak')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Anak</button>
+            <button onclick="filterCategory('Fashion')" class="category-btn px-5 py-2 rounded-full bg-white text-gray-500 border border-gray-100 whitespace-nowrap text-sm font-semibold">Fashion</button>
+        </div>
+    </section>
+
+    <!-- Product Grid -->
+    <section class="px-6 mt-4">
+        <div class="grid grid-cols-2 gap-4" id="product-container">
+            <!-- Products will be injected here -->
+        </div>
+    </section>
+
+    <!-- Info Store -->
+    <section class="px-6 mt-12 mb-10">
+        <div class="bg-gray-100 p-6 rounded-3xl">
+            <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-info-circle"></i> Informasi Toko</h3>
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-map-marker-alt mt-1 text-[#d4a373]"></i>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold">Alamat</p>
+                        <p id="info-address" class="text-xs text-gray-600 leading-relaxed">Jl. Kenangan Indah No. 45, Bandung, Jawa Barat</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-clock mt-1 text-[#d4a373]"></i>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold">Jam Operasional</p>
+                        <p id="info-hours" class="text-xs text-gray-600">Setiap Hari: 08:00 - 21:00 WIB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 glass-morphism px-8 py-4 flex justify-between items-center custom-shadow rounded-t-[35px] border-t border-white/50">
+        <a href="#" class="text-[#d4a373] text-xl flex flex-col items-center gap-1">
+            <i class="fas fa-home"></i>
+            <span class="text-[10px] font-bold">Beranda</span>
+        </a>
+        <a href="#" class="text-gray-400 text-xl flex flex-col items-center gap-1">
+            <i class="fas fa-search"></i>
+            <span class="text-[10px] font-bold">Cari</span>
+        </a>
+        <a href="#" class="text-gray-400 text-xl flex flex-col items-center gap-1">
+            <i class="fas fa-heart"></i>
+            <span class="text-[10px] font-bold">Favorit</span>
+        </a>
+        <a href="#" class="text-gray-400 text-xl flex flex-col items-center gap-1">
+            <i class="fas fa-user"></i>
+            <span class="text-[10px] font-bold">Profil</span>
+        </a>
+    </nav>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-[60] hidden flex items-end justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white w-full max-w-lg rounded-t-[40px] p-8 animate-in slide-in-from-bottom duration-500 overflow-y-auto max-h-[90vh]">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+            <div id="modal-content">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let products = JSON.parse(localStorage.getItem('yur_products')) || [
+            { id: 1, name: 'Pashmina Cradenza Silk', cat: 'Cradenza', price: 85000, discount: 45000, img: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=400', sold: 124, rating: 5, reviews: "Bahannya sangat lembut dan mewah! Cocok banget buat kondangan." },
+            { id: 2, name: 'Hijab Paris Premium', cat: 'Paris', price: 45000, discount: 25000, img: 'https://images.unsplash.com/photo-1583391262775-9a288f701211?q=80&w=400', sold: 432, rating: 5, reviews: "Gampang dibentuk, warnanya cantik-cantik banget. Bakal koleksi warna lain." },
+            { id: 3, name: 'Pashmina Kaos Polos', cat: 'Polos', price: 65000, discount: 39000, img: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?q=80&w=400', sold: 85, rating: 5, reviews: "Adem banget dipakenya, buat daily use oke banget." },
+            { id: 4, name: 'Square Motif Floral', cat: 'Motif', price: 75000, discount: 55000, img: 'https://images.unsplash.com/photo-1544441893-675973e31d85?q=80&w=400', sold: 210, rating: 5, reviews: "Motifnya elegan tidak pasaran. Pengiriman cepat!" },
+            { id: 5, name: 'Hijab Instan Anak', cat: 'Anak', price: 35000, discount: 22000, img: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=400', sold: 56, rating: 5, reviews: "Pas di muka si kecil, bahan nyaman tidak gatal." },
+            { id: 6, name: 'Tunik Fashion Modern', cat: 'Fashion', price: 185000, discount: 145000, img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400', sold: 12, rating: 5, reviews: "Modelnya stylish banget, jahitannya rapi." }
+        ];
+
+        let settings = JSON.parse(localStorage.getItem('yur_settings')) || {
+            wa: '628123456789',
+            address: 'Jl. Kenangan Indah No. 45, Bandung, Jawa Barat',
+            hours: 'Setiap Hari: 08:00 - 21:00 WIB'
+        };
+
+        // Render Functions
+        function renderProducts(filter = 'All') {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+            
+            const filtered = filter === 'All' ? products : products.filter(p => p.cat === filter);
+            
+            filtered.forEach(p => {
+                const discountPercent = Math.round(((p.price - p.discount) / p.price) * 100);
+                container.innerHTML += `
+                    <div class="product-card group bg-white rounded-[32px] p-2 overflow-hidden shadow-sm border border-gray-50 transition-all duration-300" onclick="showDetail(${p.id})">
+                        <div class="relative rounded-[26px] overflow-hidden aspect-[4/5]">
+                            <img src="${p.img}" class="w-full h-full object-cover transition-transform duration-500">
+                            <div class="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded-full">-${discountPercent}%</div>
+                            <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-red-500 text-xs">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="p-3">
+                            <p class="text-[10px] text-[#d4a373] font-bold uppercase tracking-wider mb-1">${p.cat}</p>
+                            <h3 class="font-semibold text-sm text-gray-800 leading-tight mb-2 line-clamp-1">${p.name}</h3>
+                            <div class="flex flex-col mb-2">
+                                <span class="text-xs text-gray-400 line-through">Rp ${p.price.toLocaleString()}</span>
+                                <span class="text-base font-bold text-gray-900">Rp ${p.discount.toLocaleString()}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <i class="fas fa-star text-yellow-400 text-[10px]"></i>
+                                    <span class="text-[10px] font-bold text-gray-500">5.0 | Terjual ${p.sold}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Logic Functions
+        function toggleAdmin() {
+            const panel = document.getElementById('admin-panel');
+            panel.classList.toggle('hidden');
+            
+            // Load current settings to inputs
+            document.getElementById('edit-wa').value = settings.wa;
+            document.getElementById('edit-address').value = settings.address;
+            document.getElementById('edit-hours').value = settings.hours;
+        }
+
+        function saveSettings() {
+            settings = {
+                wa: document.getElementById('edit-wa').value,
+                address: document.getElementById('edit-address').value,
+                hours: document.getElementById('edit-hours').value
+            };
+            localStorage.setItem('yur_settings', JSON.stringify(settings));
+            applySettings();
+            alert('Pengaturan disimpan!');
+            toggleAdmin();
+        }
+
+        function applySettings() {
+            document.getElementById('info-address').innerText = settings.address;
+            document.getElementById('info-hours').innerText = settings.hours;
+        }
+
+        function addProduct() {
+            const newP = {
+                id: Date.now(),
+                name: document.getElementById('p-name').value,
+                cat: document.getElementById('p-cat').value,
+                price: parseInt(document.getElementById('p-price').value),
+                discount: parseInt(document.getElementById('p-discount').value),
+                img: document.getElementById('p-img').value || 'https://images.unsplash.com/photo-1520006403909-838d6b92c22e',
+                sold: 0,
+                rating: 5,
+                reviews: "Produk baru yang sangat dinanti!"
+            };
+            
+            if(!newP.name || !newP.price) return alert('Lengkapi data produk!');
+            
+            products.unshift(newP);
+            localStorage.setItem('yur_products', JSON.stringify(products));
+            renderProducts();
+            alert('Produk berhasil ditambahkan!');
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-[#d4a373]', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white', 'text-gray-500', 'border-gray-100');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-500', 'border-gray-100');
+            event.target.classList.add('bg-[#d4a373]', 'text-white', 'shadow-md');
+            renderProducts(cat);
+        }
+
+        function showDetail(id) {
+            const p = products.find(item => item.id === id);
+            const modal = document.getElementById('product-modal');
+            const content = document.getElementById('modal-content');
+            
+            content.innerHTML = `
+                <div class="flex flex-col gap-6">
+                    <div class="rounded-3xl overflow-hidden aspect-square">
+                        <img src="${p.img}" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="text-xs font-bold text-[#d4a373] uppercase mb-1">${p.cat}</p>
+                                <h2 class="text-2xl font-bold text-gray-800">${p.name}</h2>
+                            </div>
+                            <button onclick="deleteProduct(${p.id})" class="text-red-400 p-2"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="flex text-yellow-400 text-xs">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-400">(4.9/5 dari 150+ ulasan)</span>
+                        </div>
+                        <div class="flex items-end gap-3 mb-6">
+                            <span class="text-2xl font-bold text-gray-900">Rp ${p.discount.toLocaleString()}</span>
+                            <span class="text-sm text-gray-400 line-through mb-1">Rp ${p.price.toLocaleString()}</span>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-2xl mb-6 border border-gray-100">
+                            <h4 class="font-bold text-xs uppercase text-gray-400 mb-2 tracking-widest">Ulasan Pembeli</h4>
+                            <p class="text-sm italic text-gray-600">"${p.reviews}"</p>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="closeModal()" class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center text-xl">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <a href="https://wa.me/${settings.wa}?text=Halo%20Yur%20Collection,%20saya%20ingin%20pesan%20produk%20${encodeURIComponent(p.name)}" 
+                               class="flex-1 h-14 bg-green-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-green-100">
+                                <i class="fab fa-whatsapp text-2xl"></i>
+                                Pesan Sekarang via WA
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function deleteProduct(id) {
+            if(confirm('Hapus produk ini dari katalog?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('yur_products', JSON.stringify(products));
+                renderProducts();
+                closeModal();
+            }
+        }
+
+        // Notification Simulation
+        const names = ["Siska", "Maya", "Budi", "Dewi", "Rizky", "Amanda", "Putri", "Hendra"];
+        const cities = ["Jakarta", "Bandung", "Surabaya", "Medan", "Bali", "Yogyakarta", "Makassar"];
+        const actions = ["Sedang melihat produk", "Baru saja membeli", "Menambahkan ke favorit", "Menanyakan stok"];
+
+        function showNotification() {
+            const notif = document.getElementById('notif');
+            const name = names[Math.floor(Math.random() * names.length)];
+            const city = cities[Math.floor(Math.random() * cities.length)];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const prod = products[Math.floor(Math.random() * products.length)].name;
+
+            document.getElementById('notif-user').innerText = `${name} dari ${city}`;
+            document.getElementById('notif-action').innerText = `${action} ${prod}`;
+
+            notif.classList.add('active');
+            setTimeout(() => {
+                notif.classList.remove('active');
+            }, 4000);
+        }
+
+        // Initialize
+        window.onload = () => {
+            renderProducts();
+            applySettings();
+            setInterval(showNotification, 8000);
+        };
+
+        // Close modal when click outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('product-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
