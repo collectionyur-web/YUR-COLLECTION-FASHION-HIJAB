@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUR COLLECTION – Fashion Hijab Premium</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+        CSS STYLING - TEMA ELEGAN & PREMIUM
+        ========================================
+        */
+        :root {
+            --primary-color: #d4a373; /* Nude / Beige Gold */
+            --secondary-color: #faedcd; /* Soft Beige */
+            --dark-color: #1a1a1a; /* Hitam Elegan */
+            --light-color: #ffffff;
+            --text-muted: #777;
+            --accent-color: #e29578;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fefae0;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .brand-logo {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Header & Navbar */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .brand-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: var(--dark-color);
+            margin-left: 1.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .navbar a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 60vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero h1 { font-size: 3.5rem; margin-bottom: 10px; }
+        .hero p { font-size: 1.2rem; max-width: 600px; }
+
+        /* Catalog Section */
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .section-title h2::after {
+            content: '';
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        /* Product Card */
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: 0.4s;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .product-img-container {
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .price-box {
+            margin-bottom: 10px;
+        }
+
+        .old-price {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+
+        .new-price {
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .rating {
+            color: #ffc107;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .sold-count {
+            font-size: 0.8rem;
+            color: #27ae60;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .btn-wa {
+            display: inline-block;
+            background: #25d366;
+            color: white;
+            text-decoration: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .btn-wa:hover {
+            background: #128c7e;
+            transform: scale(1.05);
+        }
+
+        /* Floating WA Button */
+        .floating-wa {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            background: #25d366;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        .floating-wa svg {
+            width: 35px;
+            fill: white;
+        }
+
+        /* Modal Preview */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        /* Marketing Popup */
+        #marketing-popup {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: 0.5s ease-in-out;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        #marketing-popup.show {
+            transform: translateY(0);
+        }
+
+        .popup-text {
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        /* Admin Simulation */
+        .admin-sim {
+            background: #f1f1f1;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            margin-top: 50px;
+            border-radius: 10px;
+        }
+
+        .admin-sim h4 { margin-bottom: 10px; color: #666; font-size: 0.8rem; text-transform: uppercase; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;}
+        .stat-item { background: white; padding: 10px; border-radius: 5px; }
+        .stat-val { display: block; font-weight: 700; color: var(--primary-color); }
+        .stat-label { font-size: 0.7rem; color: #999; }
+
+        footer {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 50px;
+        }
+
+        footer p { opacity: 0.7; font-size: 0.9rem; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            .product-grid { grid-template-columns: 1fr; }
+            #marketing-popup { bottom: 100px; left: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+    ========================================
+    HEADER & NAVIGASI
+    ========================================
+    CARA MENGGANTI LOGO:
+    Cari bagian <a href="#" class="brand-logo">...</a> di bawah.
+    Ganti teks "YUR COLLECTION" menjadi gambar dengan:
+    <img src="link-logo-anda.png" alt="Logo" style="height: 40px;">
+    -->
+    <header>
+        <a href="#" class="brand-logo">YUR COLLECTION</a>
+        <nav class="navbar">
+            <a href="#home">Home</a>
+            <a href="#produk">Produk</a>
+            <a href="#tentang">Tentang Kami</a>
+            <a href="#kontak">Kontak</a>
+        </nav>
+    </header>
+
+    <section class="hero" id="home">
+        <h1>Elegansi Dalam Hijab</h1>
+        <p>Temukan koleksi hijab premium yang dirancang khusus untuk kenyamanan dan keanggunan gaya Anda sehari-hari.</p>
+    </section>
+
+    <div class="container" id="produk">
+        <div class="section-title">
+            <h2>Koleksi Terlaris</h2>
+        </div>
+
+        <!-- 
+        ========================================
+        KATALOG PRODUK
+        ========================================
+        CARA MENAMBAH PRODUK BARU:
+        Copy-paste blok <div class="product-card">...</div> di bawah ini.
+        Ganti data src gambar, nama, dan harga sesuai keinginan.
+        -->
+        <div class="product-grid">
+            
+            <!-- Produk 1 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80" alt="Pashmina Silk" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Pashmina Silk Premium - Nude</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 125.000</span>
+                        <span class="new-price">Rp 89.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 12RB+</span>
+                    <!-- CARA GANTI WA: Ganti nomor di phone=628... & teks di text=... -->
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Pashmina%20Silk%20Premium" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- Produk 2 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?auto=format&fit=crop&w=600&q=80" alt="Paris Premium" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Square Paris Premium - Dusty Rose</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 95.000</span>
+                        <span class="new-price">Rp 65.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 10RB+</span>
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Square%20Paris%20Dusty" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- Produk 3 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80" alt="Voal Ultrafine" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Voal Ultrafine Laser Cut - Beige</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 150.000</span>
+                        <span class="new-price">Rp 115.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 8RB+</span>
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Voal%20Ultrafine" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- Produk 4 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80" alt="Plisket Full" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Pashmina Plisket Full Ceruty</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 85.000</span>
+                        <span class="new-price">Rp 49.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 15RB+</span>
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Pashmina%20Plisket" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- Produk 5 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80" alt="Inner Ninja" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Inner Hijab Ninja Anti Pusing</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 45.000</span>
+                        <span class="new-price">Rp 29.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 20RB+</span>
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Inner%20Ninja" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- Produk 6 -->
+            <div class="product-card">
+                <div class="product-img-container" onclick="openModal('https://images.unsplash.com/photo-1520006403993-4740f0ad4023?auto=format&fit=crop&w=600&q=80')">
+                    <img src="https://images.unsplash.com/photo-1520006403993-4740f0ad4023?auto=format&fit=crop&w=600&q=80" alt="Instant Hijab" class="product-img">
+                </div>
+                <div class="product-info">
+                    <div class="rating">⭐⭐⭐⭐⭐</div>
+                    <h3 class="product-name">Hijab Instan Jersey Premium</h3>
+                    <div class="price-box">
+                        <span class="old-price">Rp 75.000</span>
+                        <span class="new-price">Rp 55.000</span>
+                    </div>
+                    <span class="sold-count">Terjual 5RB+</span>
+                    <a href="https://wa.me/628123456789?text=Halo%20YUR%20COLLECTION,%20saya%20ingin%20pesan%20Hijab%20Instan" target="_blank" class="btn-wa">Order via WhatsApp</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 
+        ========================================
+        ADMIN TRACKING SIMULASI
+        ========================================
+        Bagian ini hanya visual untuk menunjukkan profesionalisme dashboard.
+        -->
+        <div class="admin-sim">
+            <h4>[ Admin Dashboard - Visitor Analytics ]</h4>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-val" id="active-viewers">12</span>
+                    <span class="stat-label">Sedang Melihat</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-val">1.284</span>
+                    <span class="stat-label">Klik Hari Ini</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-val">Rp 2.4M</span>
+                    <span class="stat-label">Estimasi Omset</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marketing Pop-up -->
+    <div id="marketing-popup">
+        <div class="popup-icon">🔔</div>
+        <div class="popup-text" id="popup-content">Seseorang baru saja membeli produk ini</div>
+    </div>
+
+    <!-- Modal for Fullscreen Image -->
+    <div id="imgModal" class="modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="imgFull">
+    </div>
+
+    <!-- Floating WA -->
+    <a href="https://wa.me/628123456789" class="floating-wa" target="_blank">
+        <svg viewBox="0 0 32 32">
+            <path d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.733 5.48 2.01 7.788l-2.01 7.212 7.379-1.935c2.247 1.173 4.805 1.848 7.521 1.848 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.333c-2.454 0-4.757-0.651-6.746-1.78l-0.483-0.276-4.402 1.154 1.174-4.213-0.303-0.481c-1.258-1.996-1.996-4.364-1.996-6.904 0-7.363 5.989-13.352 13.352-13.352s13.352 5.989 13.352 13.352-5.989 13.352-13.352 13.352zM21.579 19.167c-0.305-0.153-1.805-0.891-2.085-0.993s-0.483-0.153-0.686 0.153-0.787 0.993-0.965 1.196-0.355 0.228-0.66 0.076c-0.305-0.153-1.287-0.474-2.451-1.512-0.905-0.807-1.516-1.804-1.694-2.108s-0.019-0.469 0.133-0.621c0.137-0.137 0.305-0.355 0.457-0.533s0.203-0.305 0.305-0.508 0.051-0.381-0.025-0.533-0.686-1.65-0.94-2.26c-0.247-0.594-0.499-0.513-0.686-0.523s-0.381-0.012-0.584-0.012-0.533 0.076-0.813 0.381c-0.28 0.305-1.066 1.041-1.066 2.539s1.092 2.945 1.244 3.148c0.153 0.203 2.15 3.284 5.208 4.605 0.727 0.314 1.295 0.502 1.737 0.643 0.73 0.232 1.394 0.199 1.919 0.121 0.585-0.087 1.805-0.737 2.059-1.448s0.254-1.321 0.178-1.448-0.279-0.228-0.584-0.381z"/>
+        </svg>
+    </a>
+
+    <footer>
+        <h2 style="font-family: 'Playfair Display'; margin-bottom: 20px;">YUR COLLECTION</h2>
+        <p>&copy; 2024 YUR COLLECTION – Fashion Hijab Premium. All Rights Reserved.</p>
+        <p style="margin-top: 10px; font-size: 0.7rem;">Koleksi Hijab Eksklusif & Berkualitas</p>
+    </footer>
+
+    <script>
+        /* ========================================
+        JAVASCRIPT LOGIC
+        ========================================
+        */
+
+        // 1. Modal Image Preview
+        function openModal(imgSrc) {
+            document.getElementById('imgModal').style.display = "flex";
+            document.getElementById('imgFull').src = imgSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imgModal').style.display = "none";
+        }
+
+        // 2. Marketing Popups Simulation
+        const popups = [
+            "Siti dari Jakarta baru saja membeli Pashmina Silk",
+            "Rina dari Bandung memberikan ulasan ⭐⭐⭐⭐⭐",
+            "15 orang sedang melihat produk Voal Beige ini",
+            "Seseorang dari Surabaya baru saja checkout 3 produk",
+            "Tersisa 2 stok lagi untuk warna Dusty Rose!",
+            "Dewi memberikan rating ⭐⭐⭐⭐⭐ - Bahannya adem bgt!"
+        ];
+
+        let popupIndex = 0;
+        const popupElement = document.getElementById('marketing-popup');
+        const popupContent = document.getElementById('popup-content');
+
+        function showNextPopup() {
+            popupContent.innerText = popups[popupIndex];
+            popupElement.classList.add('show');
+            
+            setTimeout(() => {
+                popupElement.classList.remove('show');
+                popupIndex = (popupIndex + 1) % popups.length;
+            }, 4000); // Muncul selama 4 detik
+        }
+
+        // Mulai popup pertama setelah 3 detik
+        setInterval(showNextPopup, 8000); // Muncul setiap 8 detik
+
+        // 3. Admin Simulasi (Angka Viewer Berubah)
+        const viewerEl = document.getElementById('active-viewers');
+        setInterval(() => {
+            let current = parseInt(viewerEl.innerText);
+            let change = Math.floor(Math.random() * 5) - 2; // Naik turun -2 s/d +2
+            viewerEl.innerText = Math.max(5, current + change);
+        }, 3000);
+
+        // Close modal when clicking outside image
+        window.onclick = function(event) {
+            let modal = document.getElementById('imgModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
