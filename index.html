@@ -25,7 +25,6 @@
         .product-card:active {
             transform: scale(0.95);
         }
-        /* Efek Zoom Gambar */
         .img-container img {
             transition: transform 0.5s ease;
         }
@@ -103,17 +102,29 @@
             opacity: 1;
             padding: 10px 16px;
         }
+
+        /* Fullscreen Viewer */
+        #fullscreen-viewer {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #fullscreen-viewer.active {
+            display: flex;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="pb-20">
 
+    <!-- KONFIGURASI DATA -->
     <script>
         const STORE_DATA = {
             name: "Yur Collection",
-            whatsapp: "6281234567890", 
+            whatsapp: "6285295213981", 
             logo_url: "1000109704-removebg-preview.png", 
-            address: "Jl. Fashion Cantik No. 123, Jakarta Selatan",
-            hours: "08:00 - 21:00 WIB",
+            address: "Komplek Permata Kopo 2, Jl. Mustika No.A2, 50c, Sukamenak, Kec. Margahayu, Kabupaten Bandung, Jawa Barat 40228",
+            hours: "08:00 - 17:00 WIB",
             about: "Yur Collection adalah destinasi utama bagi para muslimah yang mencari hijab berkualitas premium dan fashion terkini. Kami berkomitmen menyediakan produk dengan bahan terbaik yang nyaman digunakan sepanjang hari namun tetap memberikan kesan elegan dan modern.",
             categories: ["Semua", "Polos", "Motif", "Pashmina", "Cardenza", "Paris", "Anak", "Fashion"],
             products: [
@@ -126,7 +137,11 @@
                     image: "IMG_20251215_135537.JPG",
                     sold: 1250,
                     rating: 5,
-                    desc: "Bahan Ceruty Baby Doll berkualitas, jatuh, dan mudah dibentuk. Cocok untuk acara formal maupun harian."
+                    desc: "Bahan Paris premium berkualitas, mudah tegak di dahi, tidak terawang, dan sangat nyaman untuk penggunaan harian.",
+                    reviews: [
+                        { user: "Hani", text: "Bahannya juara banget, tegak di dahi dan warnanya sesuai foto! 🔥", rating: 5 },
+                        { user: "Riska", text: "Pengiriman cepet banget, udah order ke 3 kali di sini.", rating: 5 }
+                    ]
                 },
                 {
                     id: 2,
@@ -137,7 +152,11 @@
                     image: "IMG_20251216_162521.JPG",
                     sold: 843,
                     rating: 5,
-                    desc: "Motif eksklusif Yur Collection. Bahan premium voal yang sangat nyaman."
+                    desc: "Motif eksklusif Yur Collection. Bahan premium voal yang sangat lembut dan tidak budeg di telinga.",
+                    reviews: [
+                        { user: "Siti", text: "Motifnya elegan banget, nggak pasaran. Suka banget! 😍", rating: 5 },
+                        { user: "Lulu", text: "Bahannya beneran premium, adem dipake seharian.", rating: 5 }
+                    ]
                 },
                 {
                     id: 3,
@@ -148,18 +167,25 @@
                     image: "IMG_20251215_160149.JPG",
                     sold: 520,
                     rating: 5,
-                    desc: "Tekstur bergelombang mewah khas Cardenza. Memberikan kesan elegan dan glowing saat dipakai."
+                    desc: "Pilihan warna Navy yang mewah. Bahan jatuh dan sangat mudah dibentuk untuk berbagai gaya hijab.",
+                    reviews: [
+                        { user: "Amel", text: "Warna navy-nya mewah bgt, bahannya juga jatuh bagus.", rating: 5 }
+                    ]
                 },
                 {
                     id: 4,
                     name: "GAMIS AURORA GRADASI 01A",
                     category: "Fashion",
-                    price: 35000,
-                    discountPrice: 25000,
+                    price: 350000,
+                    discountPrice: 285000,
                     image: "IMG_20251215_150411.jpg",
                     sold: 2100,
                     rating: 5,
-                    desc: "Gamisnya enak di pakai dan gak bikin gerah."
+                    desc: "Gamis Aurora dengan aksen gradasi yang memukau. Bahan premium yang adem dan potongan yang membuat tampak ramping.",
+                    reviews: [
+                        { user: "Vina", text: "Gamisnya cakep bgt, pas bgt di badan. Rekomen bgt tokonya ramah.", rating: 5 },
+                        { user: "Kaka", text: "Jahitan rapi, bahan tebel tapi gak gerah. Mantap! 🔥", rating: 5 }
+                    ]
                 },
                 {
                     id: 5,
@@ -170,19 +196,16 @@
                     image: "IMG_20251215_170104.jpg",
                     sold: 310,
                     rating: 5,
-                    desc: "Sangat rekomended untuk acara formal hehe."
+                    desc: "Koleksi terbatas Gamis Aurora. Sangat cocok untuk acara pesta maupun silaturahmi formal.",
+                    reviews: [
+                        { user: "Maya", text: "Bagus polll, pengiriman ke Jakarta cuma sehari sampai.", rating: 5 }
+                    ]
                 }
-            ],
-            reviews: [
-                "Produknya bagus banget, bahannya adem dan pengiriman cepat!",
-                "Sudah langganan di Yur Collection, gapernah kecewa sama kualitasnya.",
-                "Pashmina Cardenza-nya mewah bangeet, harganya juga bersahabat.",
-                "Packing rapi, kurirnya ramah. Bintang 5 pokoknya!",
-                "Suka banget sama motifnya, unik dan gak pasaran."
             ]
         };
     </script>
 
+    <!-- Header -->
     <header class="bg-white sticky top-0 z-40 shadow-sm">
         <div class="px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -231,7 +254,9 @@
         </div>
     </header>
 
+    <!-- Halaman Utama -->
     <div id="page-home" class="page-transition active">
+        <!-- Banner Berjalan / Alamat -->
         <div class="bg-pink-50 px-4 py-2 text-[10px] text-pink-700 flex justify-between items-center border-b border-pink-100">
             <div class="flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>
@@ -249,6 +274,7 @@
         </main>
     </div>
 
+    <!-- Halaman Profil -->
     <div id="page-profile" class="page-transition px-6 py-8">
         <div class="flex flex-col items-center mb-10 animate__animated animate__fadeIn">
             <div class="relative mb-4">
@@ -304,6 +330,7 @@
         </div>
     </div>
 
+    <!-- Live Shopping Notification -->
     <div id="live-notif" class="fixed bottom-24 left-4 right-4 z-50 pointer-events-none hidden">
         <div class="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-pink-50 flex items-center gap-3 max-w-sm mx-auto live-notif">
             <div class="w-10 h-10 rounded-full bg-pink-100 flex-shrink-0 overflow-hidden border-2 border-white">
@@ -317,6 +344,7 @@
         </div>
     </div>
 
+    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 h-16 flex items-center justify-around z-50 bottom-nav">
         <button id="nav-home" onclick="changePage('home')" class="flex flex-col items-center text-pink-600 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
@@ -332,11 +360,20 @@
         </button>
     </nav>
 
+    <!-- Modal Detail Produk -->
     <div id="product-modal" class="fixed inset-0 bg-black/60 z-[60] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-md rounded-t-[40px] p-8 transform translate-y-full transition-transform duration-300 max-h-[90vh] overflow-y-auto">
-            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+        <div class="bg-white w-full max-w-md rounded-t-[40px] p-6 transform translate-y-full transition-transform duration-300 max-h-[95vh] overflow-y-auto no-scrollbar">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
             <div id="modal-content"></div>
         </div>
+    </div>
+
+    <!-- Fullscreen Image Viewer -->
+    <div id="fullscreen-viewer" onclick="closeFullscreen()" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4">
+        <button class="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full backdrop-blur-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <img id="fullscreen-img" src="" class="max-w-full max-h-full object-contain animate__animated animate__zoomIn">
     </div>
 
     <script>
@@ -464,22 +501,34 @@
             const modal = document.getElementById('product-modal');
             const content = document.getElementById('modal-content');
             
-            content.innerHTML = `
-                <div class="relative rounded-[30px] overflow-hidden h-80 mb-6 shadow-xl group">
-                    <img src="${p.image}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-125 cursor-zoom-in" id="modal-img">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-pink-600 shadow-sm">${p.category}</span>
+            let reviewsHtml = p.reviews.map(r => `
+                <div class="bg-white p-3 rounded-2xl border border-gray-50 shadow-sm mb-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-bold text-gray-800">${r.user}</span>
+                        <div class="text-yellow-400 text-[8px]">★★★★★</div>
                     </div>
-                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold text-gray-800 shadow-sm flex items-center gap-1">
+                    <p class="text-[10px] text-gray-500">${r.text}</p>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                <div class="relative rounded-[30px] overflow-hidden h-80 mb-6 shadow-xl group cursor-pointer" onclick="openFullscreen('${p.image}')">
+                    <img src="${p.image}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+                    <div class="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="bg-white/90 p-3 rounded-full shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold text-gray-800 shadow-sm">
                         🔥 Terjual ${p.sold} produk
                     </div>
                 </div>
+                
                 <div class="flex justify-between items-start mb-4">
                     <div class="w-2/3">
                         <h2 class="text-xl font-bold text-gray-800 leading-tight">${p.name}</h2>
                         <div class="flex items-center gap-1 mt-1 text-yellow-400">
-                             ${Array(p.rating).fill('★').join('')}
-                             <span class="text-gray-400 text-[10px] ml-1">(Rating 5.0)</span>
+                             ★★★★★ <span class="text-gray-400 text-[10px] ml-1">(5.0)</span>
                         </div>
                     </div>
                     <div class="text-right">
@@ -487,16 +536,25 @@
                         <p class="text-lg font-black text-pink-600">${formatter.format(p.discountPrice)}</p>
                     </div>
                 </div>
-                <div class="bg-gray-50/50 p-5 rounded-[25px] mb-8 border border-gray-100">
-                    <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Detail Produk</h4>
-                    <p class="text-[12px] text-gray-500 leading-relaxed">${p.desc}</p>
+
+                <div class="bg-gray-50/50 p-4 rounded-[25px] mb-6 border border-gray-100">
+                    <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Deskripsi</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">${p.desc}</p>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="closeModal()" class="flex-1 bg-gray-50 py-4 rounded-2xl font-bold text-gray-400 text-xs transition-colors hover:bg-gray-100">KEMBALI</button>
+
+                <div class="mb-8">
+                    <h4 class="text-[10px] font-bold text-gray-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        Ulasan Pembeli
+                    </h4>
+                    ${reviewsHtml}
+                </div>
+
+                <div class="flex gap-3 sticky bottom-0 bg-white pt-2">
+                    <button onclick="closeModal()" class="flex-1 bg-gray-50 py-4 rounded-2xl font-bold text-gray-400 text-xs active:bg-gray-100 transition-colors">BATAL</button>
                     <a href="https://wa.me/${STORE_DATA.whatsapp}?text=Halo ${STORE_DATA.name}, saya berminat dengan koleksi: %0A*${p.name}* %0AHarga: ${formatter.format(p.discountPrice)}" 
                        target="_blank"
                        class="flex-[2] bg-pink-600 text-white py-4 rounded-2xl font-bold text-center text-xs shadow-xl shadow-pink-100 flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.29-4.143c1.589.943 3.13 1.411 4.75 1.412 5.4 0 9.792-4.392 9.795-9.792.001-2.618-1.02-5.08-2.873-6.932-1.854-1.853-4.314-2.873-6.931-2.873-5.4 0-9.791 4.391-9.794 9.792-.001 2.107.541 4.15 1.57 5.922l-.991 3.618 3.702-.972h-.228zm10.513-7.59c-.274-.137-1.623-.801-1.874-.893-.252-.093-.435-.138-.618.137s-.709.893-.869 1.076c-.16.183-.32.206-.594.069-.274-.137-1.157-.426-2.204-1.36-.814-.726-1.363-1.623-1.523-1.898-.16-.274-.017-.423.12-.56.124-.123.274-.32.411-.48.137-.16.183-.274.274-.457.091-.183.046-.343-.023-.48-.069-.137-.618-1.487-.847-2.035-.222-.53-.448-.458-.618-.466-.158-.008-.339-.01-.52-.01-.181 0-.476.067-.725.341-.25.274-.954.933-.954 2.274 0 1.341.976 2.637 1.112 2.82.137.183 1.921 2.934 4.653 4.114.65.281 1.157.449 1.553.574.653.208 1.247.179 1.715.11.522-.077 1.623-.663 1.851-1.303.229-.64.229-1.189.16-1.303-.069-.114-.251-.183-.526-.32z"/></svg>
                         BELI SEKARANG
                     </a>
                 </div>
@@ -513,6 +571,17 @@
             modal.classList.add('opacity-0');
             modal.querySelector('div').classList.add('translate-y-full');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function openFullscreen(src) {
+            const viewer = document.getElementById('fullscreen-viewer');
+            const img = document.getElementById('fullscreen-img');
+            img.src = src;
+            viewer.classList.add('active');
+        }
+
+        function closeFullscreen() {
+            document.getElementById('fullscreen-viewer').classList.remove('active');
         }
 
         function startLiveNotif() {
