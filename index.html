@@ -84,27 +84,34 @@
     <header class="sticky top-0 z-50 glass-morphism py-4 px-6 flex justify-between items-center custom-shadow">
         <div class="flex items-center gap-2">
             <div class="w-10 h-10 bg-[#d4a373] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg rotate-3">Y</div>
-            <h1 id="shop-name" class="text-xl font-bold tracking-tight text-gray-800" contenteditable="true">Yur Collection</h1>
+            <h1 id="shop-name" class="text-xl font-bold tracking-tight text-gray-800">Yur Collection</h1>
         </div>
-        <button onclick="toggleAdmin()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-yellow-100 hover:text-yellow-600 transition-all">
-            <i class="fas fa-cog"></i>
+        <button onclick="loginAdmin()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-yellow-100 hover:text-yellow-600 transition-all">
+            <i class="fas fa-lock" id="admin-icon"></i>
         </button>
     </header>
 
     <!-- Admin Panel (Hidden by default) -->
     <div id="admin-panel" class="hidden p-6 bg-white border-b border-gray-100 mb-4 animate-in fade-in duration-500">
-        <h2 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-tools"></i> Pengaturan Toko</h2>
-        <div class="grid grid-cols-1 gap-4 mb-6">
-            <input type="text" id="edit-wa" placeholder="No WhatsApp (628...)" class="p-3 border rounded-xl w-full text-sm">
-            <input type="text" id="edit-address" placeholder="Alamat Toko" class="p-3 border rounded-xl w-full text-sm">
-            <input type="text" id="edit-hours" placeholder="Jam Operasional" class="p-3 border rounded-xl w-full text-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-tools text-[#d4a373]"></i> Panel Admin</h2>
+            <button onclick="logoutAdmin()" class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full">Keluar</button>
         </div>
-        <button onclick="saveSettings()" class="bg-gray-800 text-white px-6 py-2 rounded-xl text-sm font-semibold w-full">Simpan Pengaturan</button>
-        <hr class="my-6">
-        <h2 class="font-bold text-lg mb-4">Tambah Produk Baru</h2>
+        
+        <div class="grid grid-cols-1 gap-4 mb-6">
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Informasi Toko</label>
+            <input type="text" id="edit-wa" placeholder="No WhatsApp (628...)" class="p-3 border rounded-xl w-full text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+            <input type="text" id="edit-address" placeholder="Alamat Toko" class="p-3 border rounded-xl w-full text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+            <input type="text" id="edit-hours" placeholder="Jam Operasional" class="p-3 border rounded-xl w-full text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+        </div>
+        <button onclick="saveSettings()" class="bg-gray-800 text-white px-6 py-3 rounded-xl text-sm font-bold w-full shadow-lg">Simpan Perubahan Toko</button>
+        
+        <hr class="my-6 border-gray-100">
+        
+        <h2 class="font-bold text-lg mb-4">Tambah Katalog Produk</h2>
         <div class="flex flex-col gap-3">
-            <input type="text" id="p-name" placeholder="Nama Produk" class="p-3 border rounded-xl text-sm">
-            <select id="p-cat" class="p-3 border rounded-xl text-sm">
+            <input type="text" id="p-name" placeholder="Nama Produk" class="p-3 border rounded-xl text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+            <select id="p-cat" class="p-3 border rounded-xl text-sm focus:ring-2 focus:ring-[#d4a373] outline-none bg-white">
                 <option value="Polos">Polos</option>
                 <option value="Motif">Motif</option>
                 <option value="Pashmina">Pashmina</option>
@@ -114,11 +121,11 @@
                 <option value="Fashion">Fashion</option>
             </select>
             <div class="flex gap-2">
-                <input type="number" id="p-price" placeholder="Harga Asli" class="p-3 border rounded-xl w-1/2 text-sm">
-                <input type="number" id="p-discount" placeholder="Harga Diskon" class="p-3 border rounded-xl w-1/2 text-sm">
+                <input type="number" id="p-price" placeholder="Harga Asli" class="p-3 border rounded-xl w-1/2 text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+                <input type="number" id="p-discount" placeholder="Harga Diskon" class="p-3 border rounded-xl w-1/2 text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
             </div>
-            <input type="text" id="p-img" placeholder="Link Foto Produk" class="p-3 border rounded-xl text-sm">
-            <button onclick="addProduct()" class="bg-[#d4a373] text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-[#c39262] transition-all">Tambah ke Katalog</button>
+            <input type="text" id="p-img" placeholder="Link Foto Produk (URL)" class="p-3 border rounded-xl text-sm focus:ring-2 focus:ring-[#d4a373] outline-none">
+            <button onclick="addProduct()" class="bg-[#d4a373] text-white px-6 py-4 rounded-xl font-bold shadow-xl hover:bg-[#c39262] transition-all">Upload Produk Ke Toko</button>
         </div>
     </div>
 
@@ -210,6 +217,22 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-8 animate-in zoom-in duration-300">
+            <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-[#d4a373] text-2xl mx-auto mb-4">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h3 class="text-center font-bold text-lg mb-2">Login Admin</h3>
+            <p class="text-center text-xs text-gray-400 mb-6">Hanya admin yang bisa mengubah data toko</p>
+            <input type="password" id="admin-pass" placeholder="Kata Sandi" class="w-full p-4 bg-gray-50 border rounded-2xl mb-4 text-center focus:ring-2 focus:ring-[#d4a373] outline-none tracking-widest font-bold">
+            <div class="flex gap-2">
+                <button onclick="closeLogin()" class="flex-1 py-3 text-gray-400 text-sm font-bold">Batal</button>
+                <button onclick="verifyAdmin()" class="flex-1 py-3 bg-[#d4a373] text-white rounded-xl text-sm font-bold shadow-lg">Masuk</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // State Management
         let products = JSON.parse(localStorage.getItem('yur_products')) || [
@@ -226,6 +249,44 @@
             address: 'Jl. Kenangan Indah No. 45, Bandung, Jawa Barat',
             hours: 'Setiap Hari: 08:00 - 21:00 WIB'
         };
+
+        let isAdmin = false;
+        const ADMIN_PASSWORD = "admin"; // Kata sandi standar
+
+        // Auth Functions
+        function loginAdmin() {
+            if(isAdmin) {
+                toggleAdmin();
+            } else {
+                document.getElementById('login-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeLogin() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('admin-pass').value = '';
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('admin-icon').classList.replace('fa-lock', 'fa-unlock-alt');
+                closeLogin();
+                toggleAdmin();
+                renderProducts(); // Re-render to show admin controls if needed
+            } else {
+                alert('Kata sandi salah!');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('admin-icon').classList.replace('fa-unlock-alt', 'fa-lock');
+            document.getElementById('admin-panel').classList.add('hidden');
+            renderProducts();
+            alert('Berhasil Keluar');
+        }
 
         // Render Functions
         function renderProducts(filter = 'All') {
@@ -266,6 +327,7 @@
 
         // Logic Functions
         function toggleAdmin() {
+            if(!isAdmin) return;
             const panel = document.getElementById('admin-panel');
             panel.classList.toggle('hidden');
             
@@ -273,9 +335,14 @@
             document.getElementById('edit-wa').value = settings.wa;
             document.getElementById('edit-address').value = settings.address;
             document.getElementById('edit-hours').value = settings.hours;
+            
+            if(!panel.classList.contains('hidden')) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function saveSettings() {
+            if(!isAdmin) return;
             settings = {
                 wa: document.getElementById('edit-wa').value,
                 address: document.getElementById('edit-address').value,
@@ -283,8 +350,7 @@
             };
             localStorage.setItem('yur_settings', JSON.stringify(settings));
             applySettings();
-            alert('Pengaturan disimpan!');
-            toggleAdmin();
+            alert('Pengaturan toko berhasil diperbarui!');
         }
 
         function applySettings() {
@@ -293,6 +359,7 @@
         }
 
         function addProduct() {
+            if(!isAdmin) return;
             const newP = {
                 id: Date.now(),
                 name: document.getElementById('p-name').value,
@@ -302,15 +369,22 @@
                 img: document.getElementById('p-img').value || 'https://images.unsplash.com/photo-1520006403909-838d6b92c22e',
                 sold: 0,
                 rating: 5,
-                reviews: "Produk baru yang sangat dinanti!"
+                reviews: "Produk berkualitas dari Yur Collection."
             };
             
-            if(!newP.name || !newP.price) return alert('Lengkapi data produk!');
+            if(!newP.name || !newP.price) return alert('Mohon lengkapi nama dan harga produk!');
             
             products.unshift(newP);
             localStorage.setItem('yur_products', JSON.stringify(products));
+            
+            // Reset fields
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-discount').value = '';
+            document.getElementById('p-img').value = '';
+            
             renderProducts();
-            alert('Produk berhasil ditambahkan!');
+            alert('Produk baru berhasil ditambahkan!');
         }
 
         function filterCategory(cat) {
@@ -330,41 +404,43 @@
             
             content.innerHTML = `
                 <div class="flex flex-col gap-6">
-                    <div class="rounded-3xl overflow-hidden aspect-square">
+                    <div class="relative rounded-3xl overflow-hidden aspect-square shadow-inner bg-gray-50">
                         <img src="${p.img}" class="w-full h-full object-cover">
+                        ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="absolute top-4 right-4 bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <p class="text-xs font-bold text-[#d4a373] uppercase mb-1">${p.cat}</p>
+                                <p class="text-xs font-bold text-[#d4a373] uppercase mb-1 tracking-widest">${p.cat}</p>
                                 <h2 class="text-2xl font-bold text-gray-800">${p.name}</h2>
                             </div>
-                            <button onclick="deleteProduct(${p.id})" class="text-red-400 p-2"><i class="fas fa-trash-alt"></i></button>
                         </div>
                         <div class="flex items-center gap-2 mb-4">
                             <div class="flex text-yellow-400 text-xs">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
-                            <span class="text-xs font-bold text-gray-400">(4.9/5 dari 150+ ulasan)</span>
+                            <span class="text-xs font-bold text-gray-400">(5.0/5) | Terjual ${p.sold}</span>
                         </div>
                         <div class="flex items-end gap-3 mb-6">
-                            <span class="text-2xl font-bold text-gray-900">Rp ${p.discount.toLocaleString()}</span>
-                            <span class="text-sm text-gray-400 line-through mb-1">Rp ${p.price.toLocaleString()}</span>
+                            <span class="text-3xl font-bold text-gray-900">Rp ${p.discount.toLocaleString()}</span>
+                            <span class="text-sm text-gray-400 line-through mb-1.5 font-semibold">Rp ${p.price.toLocaleString()}</span>
                         </div>
                         
-                        <div class="bg-gray-50 p-4 rounded-2xl mb-6 border border-gray-100">
-                            <h4 class="font-bold text-xs uppercase text-gray-400 mb-2 tracking-widest">Ulasan Pembeli</h4>
-                            <p class="text-sm italic text-gray-600">"${p.reviews}"</p>
+                        <div class="bg-[#faedcd] p-5 rounded-3xl mb-8 border border-[#faedcd]">
+                            <h4 class="font-bold text-[10px] uppercase text-[#d4a373] mb-2 tracking-widest flex items-center gap-2">
+                                <i class="fas fa-comment-dots"></i> Ulasan Terbaru
+                            </h4>
+                            <p class="text-sm italic text-gray-700 leading-relaxed font-medium">"${p.reviews}"</p>
                         </div>
 
-                        <div class="flex gap-3">
-                            <button onclick="closeModal()" class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center text-xl">
+                        <div class="flex gap-3 sticky bottom-0 bg-white pt-2">
+                            <button onclick="closeModal()" class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center text-xl hover:bg-gray-200 transition-all">
                                 <i class="fas fa-times"></i>
                             </button>
-                            <a href="https://wa.me/${settings.wa}?text=Halo%20Yur%20Collection,%20saya%20ingin%20pesan%20produk%20${encodeURIComponent(p.name)}" 
-                               class="flex-1 h-14 bg-green-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-green-100">
+                            <a href="https://wa.me/${settings.wa}?text=Halo%20Yur%20Collection,%20saya%20ingin%20pesan%20produk%3A%20*${encodeURIComponent(p.name)}*%0AKategori%3A%20${p.cat}%0AHarga%3A%20Rp%20${p.discount.toLocaleString()}" 
+                               class="flex-1 h-14 bg-green-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-green-100 hover:scale-[1.02] active:scale-95 transition-all">
                                 <i class="fab fa-whatsapp text-2xl"></i>
-                                Pesan Sekarang via WA
+                                Pesan via WhatsApp
                             </a>
                         </div>
                     </div>
@@ -379,7 +455,8 @@
         }
 
         function deleteProduct(id) {
-            if(confirm('Hapus produk ini dari katalog?')) {
+            if(!isAdmin) return;
+            if(confirm('Apakah Anda yakin ingin menghapus produk ini dari katalog?')) {
                 products = products.filter(p => p.id !== id);
                 localStorage.setItem('yur_products', JSON.stringify(products));
                 renderProducts();
@@ -388,9 +465,9 @@
         }
 
         // Notification Simulation
-        const names = ["Siska", "Maya", "Budi", "Dewi", "Rizky", "Amanda", "Putri", "Hendra"];
-        const cities = ["Jakarta", "Bandung", "Surabaya", "Medan", "Bali", "Yogyakarta", "Makassar"];
-        const actions = ["Sedang melihat produk", "Baru saja membeli", "Menambahkan ke favorit", "Menanyakan stok"];
+        const names = ["Siska", "Maya", "Budi", "Dewi", "Rizky", "Amanda", "Putri", "Hendra", "Lia", "Doni"];
+        const cities = ["Jakarta", "Bandung", "Surabaya", "Medan", "Bali", "Yogyakarta", "Makassar", "Semarang", "Malang"];
+        const actions = ["Sedang melihat", "Baru saja membeli", "Menyukai", "Checkout"];
 
         function showNotification() {
             const notif = document.getElementById('notif');
@@ -412,15 +489,15 @@
         window.onload = () => {
             renderProducts();
             applySettings();
-            setInterval(showNotification, 8000);
+            setInterval(showNotification, 10000);
         };
 
         // Close modal when click outside
         window.onclick = function(event) {
-            const modal = document.getElementById('product-modal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            const prodModal = document.getElementById('product-modal');
+            const loginModal = document.getElementById('login-modal');
+            if (event.target == prodModal) closeModal();
+            if (event.target == loginModal) closeLogin();
         }
     </script>
 </body>
